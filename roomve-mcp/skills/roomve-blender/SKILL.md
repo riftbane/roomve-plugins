@@ -1,6 +1,6 @@
 ---
 name: roomve-blender
-description: Write Blender Python that works at the first try in the headless Blender 5.2 of Roomve MCP (the blender_python tool). Covers the API that changed since Blender 2.8-4.x (EEVEE engine id, Principled BSDF inputs, auto smooth, OBJ/STL/PLY exporters, layered actions and f-curves, bone collections, compositor, video output), what an empty headless scene lacks (camera, light, world), safe Cycles settings on CPU within the time and memory limits, and tested recipes for modeling, modifiers, materials, lighting, rendering, UV and baking, rigging, animation, geometry nodes, import and export. Use it BEFORE writing code for blender_python, when a Blender job fails or times out, and when planning a render or an export.
+description: Write Blender Python that works at the first try in the headless Blender 5.2 of Roomve MCP (the blender_python tool). Covers the API that changed since Blender 2.8-4.x (EEVEE engine id, Principled BSDF inputs, auto smooth, OBJ/STL/PLY exporters, layered actions and f-curves, bone collections, compositor, video output), what an empty headless scene lacks (camera, light, world), safe Cycles settings on CPU within the time and memory limits, and tested recipes for modeling, modifiers, materials, lighting, rendering, UV, rigging, animation, geometry nodes, import and export, and PBR textures - baking materials to base color, roughness, metallic, normal and AO maps, high-to-low poly bakes, extracting the textures of a model, deriving maps from a picture. Use it BEFORE writing code for blender_python, when a Blender job fails or times out, and when planning a render, a bake or an export.
 ---
 
 # Blender in Roomve MCP
@@ -69,6 +69,7 @@ Measured on it:
 | `blender_view`, one 512–768 px view | 3–6 s |
 | Cycles, 1280×720, 64 samples, simple scene with a floor | 40–90 s |
 | Cycles bake of ambient occlusion, 512 px, 16 samples | about 3 s |
+| `roomve.bake_pbr`, five maps at 1024 px | about 25 s |
 | Workbench, 24 frames at 640×360 to MP4 | about 10 s |
 | EEVEE, first render of a session | about 90 s (shaders compile on the CPU), then fast |
 
@@ -83,6 +84,25 @@ Measured on it:
   counts with `triangles(o)` (recipe 1) before adding levels.
 - EEVEE is worth its start-up time only for many frames. For single images use Cycles; for motion checks
   Workbench.
+
+## PBR materials and texture maps
+
+Materials are the Principled BSDF, so they are PBR from the start. Three helpers of the `roomve` module do the
+fiddly parts (recipes 18–20, `help(roomve.bake_pbr)` for every option):
+
+| Need | Call |
+|---|---|
+| Texture maps of an object's materials (base color, roughness, metallic, normal, AO, emission, alpha), procedural nodes included | `roomve.bake_pbr("Chair", size=1024)` → `{"maps": {"base_color": "textures/Chair_base_color.png", …}}` |
+| The same, and the object ready for a game engine (one baked material, one UV layout) | `roomve.bake_pbr("Chair", apply=True)`, then export GLB |
+| The packed occlusion-roughness-metallic map | `orm=True` |
+| A high-poly sculpt's detail on a low-poly model | `roomve.bake_pbr("Low", maps=("base_color", "normal"), source="High", apply=True)` |
+| The textures a model already carries (after importing a GLB or FBX) | `roomve.extract_textures()` |
+| Height, normal, roughness and AO from one picture (a generated texture) | `roomve.maps_from_image("images/oak.jpg")` |
+
+Do not write a bake by hand unless these do not fit: a hand-written bake fails in ways that give no error (black
+maps from changing an image's colour space after baking, black base color on metals, textures baked onto
+overlapping UVs). Maps that hold numbers, not colours (roughness, metallic, normal, AO, height), must be loaded
+with `image.colorspace_settings.name = "Non-Color"`. Look at the baked maps in the answer before using them.
 
 ## Delivering the result
 

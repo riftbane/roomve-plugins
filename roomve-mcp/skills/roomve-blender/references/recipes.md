@@ -495,3 +495,101 @@ result = os.path.getsize("images/sunset.png")
 ```
 
 `generate_image` and `edit_image` read PNG, JPEG and WEBP references: convert anything else this way first.
+
+## 18. PBR: bake the materials to texture maps
+
+Materials are Blender's Principled BSDF, so everything is PBR already. `roomve.bake_pbr` turns whatever the
+materials are made of (procedural nodes, mixed images, plain values) into the texture files an engine wants.
+
+```python
+r = roomve.bake_pbr("TableTop", size=1024,
+                    maps=("base_color", "roughness", "metallic", "normal", "ao"),
+                    orm=True)                   # also the packed map: AO in red, roughness in green, metallic in blue
+result = r["maps"]                              # {"base_color": "textures/TableTop_base_color.png", ...}
+```
+
+- Maps: `base_color`, `roughness`, `metallic`, `normal` (tangent space, OpenGL, as glTF wants), `ao`, `emission`,
+  `alpha`. Files go to `textures/` (`out_dir`), named `<object>_<map>.png` (`prefix`).
+- The object is unwrapped into a clean layout in a UV layer called `Bake`; its existing UVs and textures keep
+  working. `uv="keep"` bakes to the UVs it already has (they must not overlap).
+- Time: about 25 s for five maps at 1024 px. `size=2048` takes four times as long.
+- The answer of the call shows the first maps as previews: look at them. A map that is all black or all one
+  colour means the material had nothing connected for it, which is fine for `metallic` on a non-metal.
+
+### Replace the materials with the baked one and export for an engine
+
+```python
+r = roomve.bake_pbr("Wedge", size=512, maps=("base_color", "roughness", "metallic", "normal"), apply=True)
+only(bpy.data.objects["Wedge"])
+os.makedirs("exports", exist_ok=True)
+bpy.ops.export_scene.gltf(filepath="exports/wedge.glb", export_format="GLB", use_selection=True)
+result = {"material": r["material"], "glb_bytes": os.path.getsize("exports/wedge.glb")}
+```
+
+`apply=True` gives the object one material made of the baked maps and removes its other UV layers: what an
+engine imports is then exactly what Blender shows. The GLB contains the textures.
+
+### High-poly detail on a low-poly model
+
+```python
+bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=5, radius=0.5, location=(8, 0, 0.5))
+high = bpy.context.active_object
+high.name = "RockHigh"
+noise = bpy.data.textures.new("RockNoise", "CLOUDS")
+noise.noise_scale = 0.3
+bumps = high.modifiers.new("Bumps", "DISPLACE")
+bumps.texture, bumps.strength = noise, 0.12
+bpy.ops.object.modifier_apply(modifier=bumps.name)
+high.data.materials.append(material("RockGrey", color=(0.35, 0.33, 0.3, 1.0), roughness=0.85))
+
+bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.5, location=(8, 0, 0.5))
+low = bpy.context.active_object
+low.name = "RockLow"
+bpy.ops.object.shade_smooth()
+
+r = roomve.bake_pbr("RockLow", size=512, maps=("base_color", "normal"), source="RockHigh", apply=True)
+high.hide_render = True                          # keep it in the file, out of renders and exports
+result = {"low_triangles": triangles(low), "high_triangles": triangles(high), "maps": r["maps"]}
+```
+
+The two objects must sit in the same place. `ray_distance` is how far from the low-poly surface the high-poly one
+is looked for (default: a tenth of the object's size); raise it if parts of the map come out empty.
+
+## 19. PBR maps from one picture
+
+A generated texture or a photo is only colour. `roomve.maps_from_image` estimates the other maps from it.
+
+```python
+maps = roomve.maps_from_image("images/wood.png", strength=1.0, tile=True)
+# {"height": "images/wood_height.png", "normal": "images/wood_normal.png", "roughness": …, "ao": …}
+
+m = material("WoodPBR")
+tree = m.node_tree
+def image_node(path, data):
+    node = tree.nodes.new("ShaderNodeTexImage")
+    node.image = bpy.data.images.load(path, check_existing=True)
+    if data:
+        node.image.colorspace_settings.name = "Non-Color"   # maps that are numbers, not colours
+    return node
+tree.links.new(image_node("images/wood.png", False).outputs["Color"], principled(m).inputs["Base Color"])
+tree.links.new(image_node(maps["roughness"], True).outputs["Color"], principled(m).inputs["Roughness"])
+normal_map = tree.nodes.new("ShaderNodeNormalMap")
+tree.links.new(image_node(maps["normal"], True).outputs["Color"], normal_map.inputs["Color"])
+tree.links.new(normal_map.outputs["Normal"], principled(m).inputs["Normal"])
+result = maps
+```
+
+They are estimates from brightness (bright = high and smooth, dark = low and rough; `invert=True` for the
+opposite, e.g. light mortar between dark bricks). Good for wood, stone, fabric, plaster, ground; not for pictures
+with shadows or perspective in them. `tile=False` for a picture that is not a seamless texture.
+
+## 20. Get the textures out of a model
+
+```python
+found = roomve.extract_textures(["Wedge"], out_dir="textures/extracted")
+result = [(f["path"], f["used_for"], f["size"]) for f in found]
+```
+
+Saves as files the image textures the materials use: what a GLB or FBX carries packed inside after an import, or
+what `bake_pbr(..., apply=True)` made. Without arguments it does every material of the file. `used_for` names the
+Principled BSDF inputs each image feeds (a glTF packs roughness and metallic in one image).

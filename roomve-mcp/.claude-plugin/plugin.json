@@ -1,6 +1,6 @@
 {
   "name": "roomve-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Roomve MCP (mcp.roomve.it): generate and edit images with Google Gemini and work in a personal headless Blender 5.2 with free Python (model, texture, rig, animate, render, import and export), sharing one storage space per account. Bundles the connector and three skills that explain the session, the queue, the files, the Blender 5.2 API and the image parameters, so calls work at the first try.",
   "author": {
     "name": "Roomve"
@@ -10,6 +10,8 @@
   "keywords": [
     "blender",
     "3d",
+    "pbr",
+    "textures",
     "image-generation",
     "gemini",
     "render",

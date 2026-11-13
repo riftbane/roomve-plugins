@@ -100,6 +100,10 @@ is not working: fix the prompt.
   `bpy.data.images.load("images/oak.jpg")` (use the real path from the answer). For a texture ask for
   `seamless tileable texture, top-down, even flat lighting, no shadows, no perspective`. For a decal or a label
   use `transparent_background`. See recipe 6 of **roomve-blender** for the material.
+- **Picture → PBR material.** A generated texture is only colour. `roomve.maps_from_image("images/oak.jpg")`,
+  run in `blender_python`, writes the height, normal, roughness and AO maps next to it (recipe 19 of
+  **roomve-blender** wires them into a material). Do not ask the image model for a normal or a roughness map: it
+  draws something that looks like one and is not usable as data.
 - **Concept → model.** Generate a reference sheet first (`front view and side view of the same object, side by
   side, orthographic, plain white background, no perspective`), look at it, then model. It settles proportions
   before any geometry exists.

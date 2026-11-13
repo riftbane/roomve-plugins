@@ -11,7 +11,7 @@ Marketplace di plugin per Claude della suite Roomve. Oggi contiene un plugin: **
 |---|---|
 | Connettore `roomve` | Il server MCP `https://mcp.roomve.it/mcp`: immagini con Gemini, un Blender 5.2 personale con Python libero, uno spazio file per account |
 | Skill `roomve-mcp` | Come funzionano sessione, coda, file e che cosa fare a ogni errore |
-| Skill `roomve-blender` | Scrivere Python per Blender 5.2 senza errori: le API cambiate rispetto alle versioni vecchie, limiti di tempo e memoria, ricette provate |
+| Skill `roomve-blender` | Scrivere Python per Blender 5.2 senza errori: le API cambiate rispetto alle versioni vecchie, limiti di tempo e memoria, ricette provate, materiali PBR e bake delle mappe (base color, roughness, metallic, normal, AO) |
 | Skill `roomve-images` | Parametri validi per ogni modello, riferimenti, sfondo trasparente, prompt |
 
 Serve un account su `mcp.roomve.it`: il servizio è privato e gli account li dà chi lo gestisce. Nel plugin non
@@ -80,11 +80,12 @@ claude plugin validate . && claude plugin validate roomve-mcp
 
 Se cambia il codice in `roomve-mcp/skills/roomve-blender/references/recipes.md`, va rieseguito nel Blender del
 servizio (stessa versione, 5.2): ogni blocco ```` ```python ```` deve passare. Il workflow `check` lo fa a ogni
-push scaricando Blender; in locale, con l'immagine del servizio:
+push scaricando Blender, ma salta i blocchi che usano le funzioni `roomve.*` (bake PBR, viste): quelle esistono
+solo nel servizio. In locale, con l'immagine del servizio, girano tutti:
 
 ```sh
 docker run --rm --entrypoint /opt/blender/blender -v "$PWD":/repo:ro --tmpfs /work:exec -e HOME=/work \
-  -e PYTHONPATH=/srv/bridge roomve-mcp-runner:latest -b --factory-startup -noaudio \
+  roomve-mcp-runner:latest -b --factory-startup -noaudio \
   --python /repo/scripts/test_recipes.py -- /work /repo/roomve-mcp/skills/roomve-blender/references/recipes.md
 ```
 
