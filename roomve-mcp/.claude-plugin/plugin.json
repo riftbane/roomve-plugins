@@ -1,7 +1,7 @@
 {
   "name": "roomve-mcp",
-  "version": "1.2.0",
-  "description": "Roomve MCP (mcp.roomve.it): generate and edit images with Google Gemini and work in a personal headless Blender 5.2 with free Python (model, texture, rig, animate, render, import and export), sharing one storage space per account. Bundles the connector and three skills that explain the session, the queue, the files, the Blender 5.2 API and the image parameters, so calls work at the first try.",
+  "version": "1.3.0",
+  "description": "Roomve MCP (mcp.roomve.it): generate and edit images with Google Gemini, work in a personal headless Blender 5.2 with free Python (model, texture, rig, animate, render, import and export), and work on the projects of Roomve Workspace (shared folders for assets and documents). Bundles the connector and four skills that explain the session, the queue, the files, the Blender 5.2 API, the image parameters and the project folders, so calls work at the first try.",
   "author": {
     "name": "Roomve"
   },
@@ -16,6 +16,8 @@
     "gemini",
     "render",
     "game-assets",
-    "mcp"
+    "mcp",
+    "projects",
+    "workspace"
   ]
 }

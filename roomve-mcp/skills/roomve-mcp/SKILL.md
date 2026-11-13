@@ -12,8 +12,10 @@ Roomve MCP gives the account behind the connector two generators and one storage
 | Images | `generate_image`, `edit_image` | Google Gemini image models. Any subject and style: illustrations, photos, icons, logos, concept art, UI mockups, sprites, textures. Not limited to 3D work. |
 | Blender | `blender_python`, `blender_view`, `blender_job`, `blender_control` | A private headless Blender 5.2. You send Python, it runs with the whole `bpy` API. No rules, no fixed pipeline. Models, PBR materials and their texture maps, rigs, animation, renders, import and export. |
 | Space | `list_files`, `get_file`, `create_upload_url`, `delete_files`, `list_generations`, `status` | One private folder per account with a quota. Both generators read and write there. |
+| Projects | `list_projects`, `project_files`, `project_read`, `project_write`, `project_pull`, `project_push` | The projects of Roomve Workspace the person belongs to: a shared folder per project (assets, documents) and the names of its GitHub repos. Files move between a project and the space with `project_pull` and `project_push`. |
 
 Before writing Blender code read the skill **roomve-blender**. Before generating images read **roomve-images**.
+Before touching a project of Roomve Workspace read **roomve-projects**.
 
 ## The five facts that prevent most errors
 

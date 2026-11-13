@@ -13,6 +13,7 @@ Marketplace di plugin per Claude della suite Roomve. Oggi contiene un plugin: **
 | Skill `roomve-mcp` | Come funzionano sessione, coda, file e che cosa fare a ogni errore |
 | Skill `roomve-blender` | Scrivere Python per Blender 5.2 senza errori: le API cambiate rispetto alle versioni vecchie, limiti di tempo e memoria, ricette provate, materiali PBR e bake delle mappe (base color, roughness, metallic, normal, AO) |
 | Skill `roomve-images` | Parametri validi per ogni modello, riferimenti, sfondo trasparente, prompt |
+| Skill `roomve-projects` | Lavorare sui progetti di Roomve Workspace: cartella condivisa del progetto, copie tra progetto e spazio dell'account, repo GitHub solo come nomi |
 
 Serve un account su `mcp.roomve.it`: il servizio è privato e gli account li dà chi lo gestisce. Nel plugin non
 c'è nessun segreto: l'accesso avviene con il login di Roomve, al primo uso.
@@ -67,6 +68,7 @@ roomve-mcp/
   skills/roomve-mcp/SKILL.md
   skills/roomve-blender/SKILL.md       + references/recipes.md, references/api-changes.md
   skills/roomve-images/SKILL.md
+  skills/roomve-projects/SKILL.md
 scripts/check.py                       controlli su manifest, skill e versione
 scripts/test_recipes.py                esegue in Blender ogni blocco di codice della skill Blender
 ```
