@@ -1,6 +1,6 @@
 ---
 name: roomve-blender
-description: Write Blender Python that works at the first try in the headless Blender 5.2 of Roomve MCP (the blender_python tool). Covers the API that changed since Blender 2.8-4.x (EEVEE engine id, Principled BSDF inputs, auto smooth, OBJ/STL/PLY exporters, layered actions and f-curves, bone collections, compositor, video output), what an empty headless scene lacks (camera, light, world), safe Cycles settings on CPU within the time and memory limits, and tested recipes for modeling, modifiers, materials, lighting, rendering, UV, rigging, animation, geometry nodes, import and export, and PBR textures - baking materials to base color, roughness, metallic, normal and AO maps, high-to-low poly bakes, extracting the textures of a model, deriving maps from a picture. Use it BEFORE writing code for blender_python, when a Blender job fails or times out, and when planning a render, a bake or an export.
+description: Write Blender Python that works at the first try in the headless Blender 5.2 of Roomve MCP (the blender_python tool). Covers the API that changed since Blender 2.8-4.x (EEVEE engine id, Principled BSDF inputs, auto smooth, OBJ/STL/PLY exporters, layered actions and f-curves, bone collections, compositor, video output), what an empty headless scene lacks (camera, light, world), safe Cycles settings on CPU within the time and memory limits, and tested recipes for modeling, modifiers, materials, lighting, rendering, UV, rigging, animation, geometry nodes, import and export, and PBR textures - baking materials to base color, roughness, metallic, normal and AO maps, high-to-low poly bakes, extracting the textures of a model, deriving maps from a picture - and for opening, editing and saving a .blend file of the person. Use it BEFORE writing code for blender_python, when a Blender job fails or times out, and when planning a render, a bake or an export.
 ---
 
 # Blender in Roomve MCP
@@ -103,6 +103,31 @@ Do not write a bake by hand unless these do not fit: a hand-written bake fails i
 maps from changing an image's colour space after baking, black base color on metals, textures baked onto
 overlapping UVs). Maps that hold numbers, not colours (roughness, metallic, normal, AO, height), must be loaded
 with `image.colorspace_settings.name = "Non-Color"`. Look at the baked maps in the answer before using them.
+
+## Working on a .blend the person already has
+
+The file must be in the account's space first. A file attached to the chat is not there: see **roomve-mcp**,
+"Getting files". Then (recipes 21 and 22):
+
+- `bpy.ops.wm.open_mainfile(filepath="uploads/model.blend")` replaces the whole scene. Python variables that
+  held objects are invalid afterwards: look everything up by name again. Files saved by older Blender versions
+  open (4.3 and 5.0 files were read here).
+- Call `roomve.scene_summary()` right after. It lists objects, camera, engine and resolution, and under
+  `missing_files` the textures and linked libraries the file expects **next to it** and that are not in the
+  space, each with the path where it should be (`expected_at`). Missing textures render magenta. Tell the person
+  which files to upload there, then `bpy.data.images["name"].reload()`. Textures packed in the file need
+  nothing: suggest *File > External Data > Pack Resources* before sending a file.
+- To take only some objects into the current scene use `bpy.data.libraries.load` (recipe 22) instead of opening
+  the file.
+- Render settings come from the file. Read `scene.render.engine`, `scene.cycles.samples` and the resolution
+  before the first render: a file made for a workstation with a GPU can exceed the time limit here.
+- Python drivers and scripts stored in the file do not run by themselves. If a rig needs them, set
+  `bpy.context.preferences.filepaths.use_scripts_auto_execute = True` before opening it.
+- **Save with an explicit path, always**: `bpy.ops.wm.save_as_mainfile(filepath="uploads/model_v2.blend")`. A new
+  name keeps the person's original; the same path replaces it (Blender leaves the previous version as
+  `.blend1`), so ask first. Never `bpy.ops.wm.save_mainfile()`: after a restart of the session Blender has the
+  automatic save open, not the person's file, and that call fails. `roomve.document()` is the file the scene
+  came from, and the `Note:` of the restart names it.
 
 ## Delivering the result
 

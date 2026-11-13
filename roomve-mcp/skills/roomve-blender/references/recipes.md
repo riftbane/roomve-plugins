@@ -593,3 +593,38 @@ result = [(f["path"], f["used_for"], f["size"]) for f in found]
 Saves as files the image textures the materials use: what a GLB or FBX carries packed inside after an import, or
 what `bake_pbr(..., apply=True)` made. Without arguments it does every material of the file. `used_for` names the
 Principled BSDF inputs each image feeds (a glTF packs roughness and metallic in one image).
+
+## 21. Open a .blend of the person, check it, save it under a new name
+
+```python
+path = "table.blend"                       # an uploaded file is like "uploads/model.blend": see list_files
+bpy.ops.wm.open_mainfile(filepath=path)    # replaces the whole scene: variables that held objects are invalid now
+scene = bpy.context.scene
+missing = [(i.name, i.filepath) for i in bpy.data.images
+           if i.source == "FILE" and i.filepath and not i.packed_file
+           and not os.path.exists(bpy.path.abspath(i.filepath))]          # external textures that are not there
+result = {"file": bpy.data.filepath, "objects": [(o.name, o.type) for o in scene.objects][:20],
+          "camera": scene.camera.name if scene.camera else None, "engine": scene.render.engine,
+          "resolution": (scene.render.resolution_x, scene.render.resolution_y),
+          "frames": (scene.frame_start, scene.frame_end), "missing_textures": missing}
+```
+
+`roomve.scene_summary()` gives the same and more in one call, with `missing_files` for every kind of external
+file. After the changes, save with an explicit path:
+
+```python
+bpy.ops.wm.save_as_mainfile(filepath="table_v2.blend")    # a new name: the file that was opened stays as it was
+result = bpy.data.filepath
+```
+
+## 22. Bring objects of another .blend into the current scene
+
+```python
+with bpy.data.libraries.load("table.blend", link=False) as (src, dst):    # link=False copies the data in
+    available = list(src.objects)                 # names only; also src.collections, src.materials, src.node_groups
+    dst.objects = available[:2]                   # the names to take
+for o in dst.objects:                             # now real objects, with their meshes, materials and textures
+    if o is not None:
+        bpy.context.scene.collection.objects.link(o)      # an appended object is in no collection until linked
+result = {"in the file": available, "appended": [o.name for o in dst.objects if o is not None]}
+```

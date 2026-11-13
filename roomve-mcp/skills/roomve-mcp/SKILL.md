@@ -65,12 +65,23 @@ the same account (maybe from another chat of the same person): wait for it the s
 
 Results list every file written, with a download link (valid 7 days).
 
+**A file attached to the chat is not in the space.** The tools receive text only: the service never sees an
+attachment (a `.blend`, a model, a picture), and you cannot pass its content through a tool. To work on a file
+it must be put in the space in one of these ways:
+
 - **You have a shell (Claude Code):** save a file into the project with
   `curl -fsSL "<url>" -o path/in/project.glb`. Bring a local file in with `create_upload_url(path="uploads/ref.png")`
   and run the `curl -T` command it returns (the link lasts 15 minutes).
 - **You have no shell (a chat):** give the person the link, or tell them the file is on the website
-  (`https://mcp.roomve.it`, page File). To bring a file in, ask the person to upload it from that page, then find
-  it with `list_files`. Do not pretend to run curl.
+  (`https://mcp.roomve.it`, page File). To bring a file in, ask the person to upload it from that page (drag it
+  in, up to 500 MB), then find it with `list_files`. Do not pretend to run curl.
+- **The chat has a code sandbox that holds the attachment:** the same `curl -T` works only if the sandbox is
+  allowed to reach `mcp.roomve.it`, which is off unless the person or their organization enabled it. Try once;
+  if the connection is refused, ask for the upload from the website.
+- **The file is at a link** the person gives (a share link of a cloud drive, a public URL): Blender can fetch it,
+  with `urllib.request.urlretrieve(url, "uploads/model.blend")` in `blender_python` (create `uploads/` first).
+- Once it is there, a `.blend` opens with `bpy.ops.wm.open_mainfile(filepath="uploads/model.blend")`, other
+  models with the importers: see **roomve-blender**, "Working on a .blend the person already has".
 - Never rebuild a file from a preview and never paste file contents back through a tool: always move the file
   itself.
 - `get_file(path)` gives a fresh link for any file of the space, and a preview if it is an image.
@@ -84,6 +95,7 @@ The space has a quota. `delete_files` frees room; ask the person before deleting
 | `Job #N is still running after …` | `blender_job(job_id=N)`. Do not resubmit. |
 | `Job #N is waiting for its turn …` | Same. If the running job is unwanted: `blender_control(action="cancel")`. |
 | `Note: A new Blender process was started and the scene saved at … was reopened` | Normal after idle time. Variables are gone: look objects up by name, define helpers again. Check the scene with `blender_view` or `roomve.scene_summary()` if work since that save may be missing. |
+| `Note: … The scene belongs to the file X, but what is open now is the automatic save of the session` | The scene is intact. To save it use `bpy.ops.wm.save_as_mainfile(filepath="X")`; `save_mainfile()` fails until then. |
 | `Job #N FAILED` with a traceback | Read the last line and the `Hint:` lines under it: they name the fix for known Blender 5.2 mistakes. Fix only the failing part (fact 4). |
 | `The execution went over its time limit` | The work was too heavy for the limit: fewer samples, lower resolution, fewer frames per call, or a longer `timeout_seconds`. The scene is back at the last automatic save. |
 | `Blender ran out of memory and was stopped` | Lighter scene: lower subdivision levels, smaller textures, fewer instances made real. The scene is back at the last automatic save. |
@@ -101,6 +113,6 @@ The space has a quota. `delete_files` frees room; ask the person before deleting
 - Give `blender_python` a short `title` ("Model the chair legs"): the person sees it in the history on the site.
 - Keep outputs in folders by kind: `images/`, `renders/`, `exports/`, `textures/`, `uploads/`. Create a folder
   before writing in it with `os.makedirs("renders", exist_ok=True)`.
-- Save a `.blend` of finished work in the space (`bpy.ops.wm.save_as_mainfile(filepath="chair.blend")`): the
-  automatic save of the session is a safety net, not a deliverable.
+- Save a `.blend` of finished work in the space (`bpy.ops.wm.save_as_mainfile(filepath="chair.blend")`, always
+  with the path): the automatic save of the session is a safety net, not a deliverable.
 - `list_generations` recalls what was made earlier, with the paths of the files, when a conversation resumes.
