@@ -1,0 +1,14 @@
+{
+  "name": "roomve-plugins",
+  "owner": {
+    "name": "Roomve"
+  },
+  "description": "Plugins of the Roomve suite. roomve-mcp: image generation and a personal headless Blender, through the Roomve MCP connector.",
+  "plugins": [
+    {
+      "name": "roomve-mcp",
+      "source": "./roomve-mcp",
+      "description": "Roomve MCP connector (images with Gemini, free Python in a personal headless Blender) and the skills to use it without errors."
+    }
+  ]
+}

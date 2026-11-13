@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "roomve": {
+      "type": "http",
+      "url": "https://mcp.roomve.it/mcp"
+    }
+  }
+}
