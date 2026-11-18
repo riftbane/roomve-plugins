@@ -1,6 +1,6 @@
 ---
 name: roomve-projects
-description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - find the person's projects, read what is in a project's shared folder, bring its files into the account's space for Blender or the image tools, and put results (game assets, renders, textures, documents) back into the project. Use it BEFORE the first call of list_projects, project_files, project_read, project_write, project_pull or project_push, whenever the person says "the project", "our game", "put it in the project", "the shared folder", "the assets folder", or names a project or its repos, and whenever one of those tools answers with an error. It explains where a project's files and code live, how the paths work, how copies between project and space behave, what is never reachable through Roomve (GitHub), and how to behave in a folder other people use.
+description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back) and its tasks, comments and roadmap epics. Use it BEFORE the first call of list_projects, project_files, project_read, project_write, project_pull, project_push, project_tasks, task_read, task_create, task_update, task_comment, task_delete, epic_create, epic_update or epic_delete, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the to-do list", "the roadmap", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, the tasks and epics, what is never reachable (GitHub), and how to behave where other people work.
 ---
 
 # Projects of Roomve Workspace
@@ -102,6 +102,36 @@ A typical asset job:
 - Do not push intermediate files (previews, test renders, `.blend1`). Push what the project needs.
 - Say what you put where: the other people were not in this conversation.
 
+## Tasks, comments and the roadmap
+
+A project also has **tasks** (its to-do list, like the issues of a repo: a title, a Markdown description, a state,
+an assignee, a due day, labels, a conversation of comments) and **epics** (the roadmap: groups of tasks with a goal
+and start and end days). You act **as the person**: what you write appears with their name, their permissions apply.
+
+| Tool | What it does |
+|---|---|
+| `project_tasks(project, status, assignee, epic, label, search)` | The tasks (open ones by default; `status="all"`), the epics with days and progress, the labels and the people (`@username`). Every task and epic has an **id** |
+| `task_read(project, task_id)` | One task whole: description, links, attached files, GitHub issues/PRs, comments first to last |
+| `task_create(project, title, description, status, assignee, due_date, epic, labels)` | A new task |
+| `task_update(project, task_id, …)` | Changes only the fields given. `status="done"` closes it |
+| `task_comment(project, task_id, body)` | A comment at the end of the conversation |
+| `task_delete`, `epic_delete` | Remove one (ask first). An epic's tasks stay, outside any epic |
+| `epic_create`, `epic_update` | An epic: title, description, colour, `start_date`, `due_date` |
+
+- States: `todo` (to do), `doing` (in progress), `done`. Days are `YYYY-MM-DD`.
+- `assignee`: a username, a name or `me`; only people who can open the project. `epic`: an id or the exact title.
+  `labels`: names of labels that already exist (they are created on the website). In `task_update` an empty
+  string removes the assignee, the due day or the epic, and `labels=[]` removes all labels.
+- `description` in `task_update` and `epic_update` **replaces** the old one: read it with `task_read` (or
+  `project_tasks(epic=…)`) and send back the whole text changed. Checklists are `- [ ] step` / `- [x] step`.
+- **`@username` in a comment reaches that person's inbox** on the website. Name someone only when they should
+  look; never name the person themselves to get attention. The answer says whose inbox it reached.
+- Look with `project_tasks` before creating, so as not to repeat a task that exists. Group work in an epic only if
+  the person asks or one fits clearly.
+- Reading comments here does not mark them read for the person: they still see them as new on the website.
+- Attachments, labels and linked issues/PRs are shown but changed only on the website. Task ids are for you:
+  when telling the person about a task, give its title and its link.
+
 ## What each answer means and what to do
 
 | The answer says | Do this |
@@ -117,4 +147,10 @@ A typical asset job:
 | `A folder with that name is already there` | Choose another file name. |
 | `Invalid path or name (…)` | No `..`, no empty names; paths start from the project root. |
 | `Roomve Workspace, or the storage behind it, is not answering` | Wait a minute and call again once. |
+| `No such task in this project` / `No such epic …` | It was deleted or the id is wrong: `project_tasks` for the ids. |
+| `… is not one of the people who can open the project` | Use a username from the list in the answer. |
+| `No label called …` | Use an existing label, or leave labels out; labels are created on the website. |
+| `Roomve Workspace refused it (field …): …` | The message (in Italian) says what is wrong with that field: fix it and call again. |
+| `Limit of the project reached` | Tell the person; do not retry. |
+| `This person may not do that` | Deleting is for who wrote it or who has full access: tell the person. |
 | `Roomve Workspace is not connected to this server` | The project tools are off on this server. Say so and stop. |
