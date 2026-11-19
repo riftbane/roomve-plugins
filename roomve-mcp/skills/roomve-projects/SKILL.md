@@ -1,6 +1,6 @@
 ---
 name: roomve-projects
-description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back) and its tasks, comments and roadmap epics. Use it BEFORE the first call of list_projects, project_files, project_read, project_write, project_pull, project_push, project_tasks, task_read, task_create, task_update, task_comment, task_delete, epic_create, epic_update or epic_delete, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the to-do list", "the roadmap", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, the tasks and epics, what is never reachable (GitHub), and how to behave where other people work.
+description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back), its tasks, comments and roadmap epics, and its wiki. Use it BEFORE the first call of list_projects, project_*, task_*, epic_* or wiki_* tools, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the roadmap", "the wiki", "the lore", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, tasks and epics, wiki pages with their images, what is never reachable (GitHub), and how to behave where other people work.
 ---
 
 # Projects of Roomve Workspace
@@ -132,6 +132,33 @@ and start and end days). You act **as the person**: what you write appears with 
 - Attachments, labels and linked issues/PRs are shown but changed only on the website. Task ids are for you:
   when telling the person about a task, give its title and its link.
 
+## The wiki
+
+A project has a **wiki** (on the website, tab Wiki; it used to be called "Storia"): the lore and the world of the
+game, the rules, anything the team writes down. Pages form a tree, at most 4 levels deep.
+
+| Tool | What it does |
+|---|---|
+| `wiki_pages(project, search)` | The tree of pages with their ids; with `search`, the pages that contain those words |
+| `wiki_read(project, page_id)` | A page: its **version**, its place in the tree, its text in Markdown, its images |
+| `wiki_create(project, title, text, parent)` | A new page, under `parent` (id or exact title) or at the top |
+| `wiki_update(project, page_id, version, title, text, parent, position)` | Change title, text or place |
+| `wiki_delete(project, page_id)` | Remove a page without sub-pages (ask first) |
+
+- The text is Markdown: `#`/`##` headings (they make the page's outline on the website), bold, italic, lists,
+  quotes, and `[[Title of another page]]` to link a page (a link to a page that does not exist yet shows in red).
+- **Images** (often maps with places, areas and writings drawn on them) appear in the text as a line
+  `{{image <id>}}`, and below it `wiki_read` lists what is drawn on each, with x and y from 0 (left/top) to 1.
+  Use them to describe the world consistently. Images are added and drawn on **only on the website**.
+- `text` in `wiki_update` **replaces** the whole text: start from `wiki_read`, change what is needed and keep
+  each `{{image …}}` line where the image belongs. Leaving one out is refused unless `remove_images=true` (only
+  if the person asked to take that image off the page).
+- `version` is required to change title or text. If someone saved the page after you read it, nothing is
+  changed and the answer says so: read it again and redo the change on the new text.
+- Moving: `parent` (empty string = the top) and `position` (0 = first among its siblings).
+- Look with `wiki_pages` before creating a page: write in the page that exists, or under the right parent.
+  Keep the names, places and facts already in the wiki; when something you write contradicts it, say so.
+
 ## What each answer means and what to do
 
 | The answer says | Do this |
@@ -153,4 +180,8 @@ and start and end days). You act **as the person**: what you write appears with 
 | `Roomve Workspace refused it (field …): …` | The message (in Italian) says what is wrong with that field: fix it and call again. |
 | `Limit of the project reached` | Tell the person; do not retry. |
 | `This person may not do that` | Deleting is for who wrote it or who has full access: tell the person. |
+| `No such page in this wiki` / `No wiki page …` | `wiki_pages` for the ids and titles. |
+| `… saved this page after you read it` | `wiki_read` again, redo the change on the new text with the new version. |
+| `The new text leaves out {{image …}}` | Put the image lines back; `remove_images=true` only if the person asked. |
+| `The page has sub-pages` | Move or delete the sub-pages first (ask). |
 | `Roomve Workspace is not connected to this server` | The project tools are off on this server. Say so and stop. |
