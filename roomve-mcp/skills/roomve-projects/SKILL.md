@@ -1,6 +1,6 @@
 ---
 name: roomve-projects
-description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back), its tasks, comments and roadmap epics, and its wiki (also published as a website on the person's domain). Use it BEFORE the first call of list_projects, project_*, task_*, epic_* or wiki_* tools, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the roadmap", "the wiki", "the lore", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, tasks and epics, wiki pages with their images, what is never reachable (GitHub), and how to behave where other people work.
+description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back), its tasks, comments and roadmap epics, and its wiki (also published as a website on the person's domain), and its own static website. Use it BEFORE the first call of list_projects, project_*, task_*, epic_* or wiki_* tools, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the roadmap", "the wiki", "the lore", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, tasks and epics, wiki pages with their images, what is never reachable (GitHub), and how to behave where other people work.
 ---
 
 # Projects of Roomve Workspace
@@ -179,6 +179,25 @@ can open the project may do it.
   a bare domain, plus the **TXT** `_roomve.<domain>`. Then `check` (it is also checked every 15 minutes by itself).
   Once active, HTTPS comes a few minutes later.
 
+### The site of a project
+
+A project can put its **website** online on the person's own domain: the static files of a folder of the project
+(default `Sito/`, or its `frontend/` sub-folder): `index.html`, pages, styles, scripts, images. No backend or database
+yet. Everyone who can open the project may do it.
+
+| Tool | What it does |
+|---|---|
+| `site_status(project)` | Online or not, where, which folder the next version takes, the domain and its DNS records, the versions kept |
+| `site_deploy(project, action, …)` | `deploy` the files now, `unpublish`, `restore` a kept version (`deploy_id`), or `settings`: `folder`, `spa` (single-page app: unknown addresses open index.html) |
+| `site_domain(project, action, name)` | `link` a domain of the person, `check` its DNS now, `unlink` it |
+
+- Put the files in the folder first (`project_write`, `project_push`); `index.html` is required. Files whose name
+  starts with a dot (`.env`, `.git`) never go online, nor `backend/` and `backup/` at the top of the folder.
+- Online goes a **fixed copy**: changing the files does not change the site until the next `deploy`.
+- It makes things **public**: ask the person before `deploy`, before `restore` and before `unlink`.
+- The domain works as for the wiki: tell the person the records the answer lists (CNAME to site.roomve.it for a
+  sub-domain such as www.example.com, or A/AAAA for a bare domain, plus the TXT `_roomve.<domain>`), then `check`.
+
 ## What each answer means and what to do
 
 | The answer says | Do this |
@@ -206,5 +225,6 @@ can open the project may do it.
 | `The page has sub-pages` | Move or delete the sub-pages first (ask). |
 | `Roomve Workspace refused it: …` (publish, domain) | The message says why: nothing to publish, branch gone, domain taken or invalid, a publish already running. Fix that, do not just retry. |
 | `Too large to publish` | The copy's images are too large: leave out pages or images (ask the person). |
+| `… manca index.html` / `… non c'è la cartella …` (site) | Put an index.html in the site's folder (or create the folder), then deploy again. |
 | `… still waiting for its DNS` | The records are not there yet (or are wrong: the answer shows what was found). Records can take hours to spread. |
 | `Roomve Workspace is not connected to this server` | The project tools are off on this server. Say so and stop. |
