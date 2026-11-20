@@ -1,6 +1,6 @@
 ---
 name: roomve-projects
-description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back), its tasks, comments and roadmap epics, and its wiki. Use it BEFORE the first call of list_projects, project_*, task_*, epic_* or wiki_* tools, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the roadmap", "the wiki", "the lore", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, tasks and epics, wiki pages with their images, what is never reachable (GitHub), and how to behave where other people work.
+description: Work on a project of Roomve Workspace (workspace.roomve.it) through the Roomve MCP connector - its shared folder (read files, bring them into the account's space for Blender or the image tools, put results back), its tasks, comments and roadmap epics, and its wiki (also published as a website on the person's domain). Use it BEFORE the first call of list_projects, project_*, task_*, epic_* or wiki_* tools, whenever the person says "the project", "our game", "the shared folder", "the tasks", "the roadmap", "the wiki", "the lore", names a project or its repos, and whenever one of those tools answers with an error. It explains where files and code live, the paths, the copies, tasks and epics, wiki pages with their images, what is never reachable (GitHub), and how to behave where other people work.
 ---
 
 # Projects of Roomve Workspace
@@ -159,6 +159,26 @@ game, the rules, anything the team writes down. Pages form a tree, at most 4 lev
 - Look with `wiki_pages` before creating a page: write in the page that exists, or under the right parent.
   Keep the names, places and facts already in the wiki; when something you write contradicts it, say so.
 
+### Publishing the wiki
+
+The wiki can go online as a **read-only website on the person's own domain** (Roomve gives no domain). Everyone who
+can open the project may do it.
+
+| Tool | What it does |
+|---|---|
+| `wiki_publication(project)` | Online or not, where, who may read it, which pages the next copy holds, the domain and the DNS records it still needs, the copies kept |
+| `wiki_publish(project, action, …)` | `publish` a new fixed copy, `unpublish`, `restore` a kept copy (`snapshot_id`), or `settings`: `visibility` (`public` / `link`), `new_link`, `title`, `branch`, `exclude`, `indexable` |
+| `wiki_domain(project, action, name)` | `link` a domain of the person, `check` its DNS now, `unlink` it |
+
+- What is online is a **fixed copy**: changes to the wiki do not show until the next `publish`. Title, branch,
+  excluded pages and indexing apply from the next publish; `visibility` and `new_link` apply at once.
+- It makes things **public**: ask the person before `publish`, before `visibility=public`, before `restore`, and
+  before `unlink`. Spoilers: a page in `exclude` leaves with its sub-pages.
+- The domain: you cannot change the person's DNS. After `link`, tell them exactly the records the answer lists: a
+  **CNAME to site.roomve.it** for a sub-domain (wiki.example.com, the advised choice), or the **A/AAAA** records for
+  a bare domain, plus the **TXT** `_roomve.<domain>`. Then `check` (it is also checked every 15 minutes by itself).
+  Once active, HTTPS comes a few minutes later.
+
 ## What each answer means and what to do
 
 | The answer says | Do this |
@@ -184,4 +204,7 @@ game, the rules, anything the team writes down. Pages form a tree, at most 4 lev
 | `… saved this page after you read it` | `wiki_read` again, redo the change on the new text with the new version. |
 | `The new text leaves out {{image …}}` | Put the image lines back; `remove_images=true` only if the person asked. |
 | `The page has sub-pages` | Move or delete the sub-pages first (ask). |
+| `Roomve Workspace refused it: …` (publish, domain) | The message says why: nothing to publish, branch gone, domain taken or invalid, a publish already running. Fix that, do not just retry. |
+| `Too large to publish` | The copy's images are too large: leave out pages or images (ask the person). |
+| `… still waiting for its DNS` | The records are not there yet (or are wrong: the answer shows what was found). Records can take hours to spread. |
 | `Roomve Workspace is not connected to this server` | The project tools are off on this server. Say so and stop. |
