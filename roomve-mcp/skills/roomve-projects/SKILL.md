@@ -182,14 +182,19 @@ can open the project may do it.
 ### The site of a project
 
 A project can put its **website** online on the person's own domain: the static files of a folder of the project
-(default `Sito/`, or its `frontend/` sub-folder): `index.html`, pages, styles, scripts, images. No backend or database
-yet. Everyone who can open the project may do it.
+(default `Sito/`, or its `frontend/` sub-folder): `index.html`, pages, styles, scripts, images. With a
+`Sito/backend/package.json` the site also has a **Node.js 24 backend**: it answers on `/api` of the domain, listens on
+`PORT`, has its own SQLite file at `DATABASE_PATH` (copied every day to `Sito/backup/`), gets the secrets as environment
+variables, reaches the Internet but not the server; npm installs its dependencies at each deploy.
+`Sito/roomve-site.json` can say `{"backend": {"main": "server.js", "path": "/api"}}`. Everyone who can open the project
+may do it.
 
 | Tool | What it does |
 |---|---|
 | `site_status(project)` | Online or not, where, which folder the next version takes, the domain and its DNS records, the versions kept |
 | `site_deploy(project, action, …)` | `deploy` the files now, `unpublish`, `restore` a kept version (`deploy_id`), or `settings`: `folder`, `spa` (single-page app: unknown addresses open index.html) |
 | `site_domain(project, action, name)` | `link` a domain of the person, `check` its DNS now, `unlink` it |
+| `site_backend(project, action, …)` | The backend: `logs`, `restart`, `stop`, `backup` its database now, `set_secret` / `delete_secret` (name, value) |
 
 - Put the files in the folder first (`project_write`, `project_push`); `index.html` is required. Files whose name
   starts with a dot (`.env`, `.git`) never go online, nor `backend/` and `backup/` at the top of the folder.
@@ -226,5 +231,6 @@ yet. Everyone who can open the project may do it.
 | `Roomve Workspace refused it: …` (publish, domain) | The message says why: nothing to publish, branch gone, domain taken or invalid, a publish already running. Fix that, do not just retry. |
 | `Too large to publish` | The copy's images are too large: leave out pages or images (ask the person). |
 | `… manca index.html` / `… non c'è la cartella …` (site) | Put an index.html in the site's folder (or create the folder), then deploy again. |
+| `… npm …` / `Il backend si è fermato appena partito …` with a log | Nothing changed online. Read the log, fix the backend's files, deploy again. |
 | `… still waiting for its DNS` | The records are not there yet (or are wrong: the answer shows what was found). Records can take hours to spread. |
 | `Roomve Workspace is not connected to this server` | The project tools are off on this server. Say so and stop. |
