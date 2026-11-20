@@ -203,6 +203,23 @@ may do it.
 - The domain works as for the wiki: tell the person the records the answer lists (CNAME to site.roomve.it for a
   sub-domain such as www.example.com, or A/AAAA for a bare domain, plus the TXT `_roomve.<domain>`), then `check`.
 
+### Distributing the releases
+
+The GitHub releases of a linked repo can be **served by Roomve Workspace** to programs and download pages: the client
+never sees GitHub (private repos too). Channels `release` and `prerelease` come from GitHub's pre-release flag (drafts
+never); mappers say which file is for which platform; access is public or limited (tokens made on the website).
+
+| Tool | What it does |
+|---|---|
+| `dist_status(project)` | Per linked repo: the URLs (`…/release/latest.json`, `…/prerelease/latest.json`, `…/versions.json`), access, mappers, the newest versions with their files mapped or not |
+| `dist_configure(project, repo, …)` | Turn it on/off (made if missing), name, `access`, `prerelease_access`, `mappers` (the whole list), `pin_release` / `pin_prerelease` |
+
+- A program asks `latest.json?platform=windows&arch=x64` and gets `{version, file, url, size, sha256}`; the file is at
+  `…/<version>/<file>`, with `Authorization: Bearer rwd_…` when the access is limited.
+- Public access makes the files downloadable by anyone: ask the person first. On a public repo limited access hides
+  nothing (GitHub gives the files anyway): say so.
+- The organization's GitHub token must see the repo with **Contents: read**.
+
 ## What each answer means and what to do
 
 | The answer says | Do this |
@@ -233,4 +250,5 @@ may do it.
 | `… manca index.html` / `… non c'è la cartella …` (site) | Put an index.html in the site's folder (or create the folder), then deploy again. |
 | `… npm …` / `Il backend si è fermato appena partito …` with a log | Nothing changed online. Read the log, fix the backend's files, deploy again. |
 | `… still waiting for its DNS` | The records are not there yet (or are wrong: the answer shows what was found). Records can take hours to spread. |
+| `… token GitHub … non legge le release …` | The organization's GitHub token lacks Contents: read on that repo: the owner fixes it in the organization's settings. |
 | `Roomve Workspace is not connected to this server` | The project tools are off on this server. Say so and stop. |

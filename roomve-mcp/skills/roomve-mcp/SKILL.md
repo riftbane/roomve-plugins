@@ -16,6 +16,7 @@ Roomve MCP gives the account behind the connector two generators and one storage
 | Tasks | `project_tasks`, `task_read`, `task_create`, `task_update`, `task_comment`, `task_delete`, `epic_create`, `epic_update`, `epic_delete` | The to-do list of a project (tasks with comments) and its roadmap (epics), written as the person. See **roomve-projects**. |
 | Wiki | `wiki_pages`, `wiki_read`, `wiki_create`, `wiki_update`, `wiki_delete`, `wiki_publication`, `wiki_publish`, `wiki_domain` | The wiki of a project (lore, world, rules): pages in Markdown with images and maps, and its publication as a website on the person's domain. See **roomve-projects**. |
 | Site | `site_status`, `site_deploy`, `site_domain`, `site_backend` | The website of a project (static files, and a Node.js backend with SQLite), from a folder of the project, on the person's domain. See **roomve-projects**. |
+| Releases | `dist_status`, `dist_configure` | The GitHub releases of a linked repo served to programs (channels, platforms, access). See **roomve-projects**. |
 
 Before writing Blender code read the skill **roomve-blender**. Before generating images read **roomve-images**.
 Before touching a project of Roomve Workspace read **roomve-projects**.
