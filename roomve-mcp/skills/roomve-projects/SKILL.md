@@ -132,6 +132,18 @@ and start and end days). You act **as the person**: what you write appears with 
 - Attachments, labels and linked issues/PRs are shown but changed only on the website. Task ids are for you:
   when telling the person about a task, give its title and its link.
 
+### Moving, renaming, deleting, uploading
+
+| Tool | What it does |
+|---|---|
+| `project_move(project, paths, to, create, on_conflict)` | Move files or folders into a folder of the project (`create` makes it) |
+| `project_rename(project, path, name, on_conflict)` | Rename one file or folder where it is |
+| `project_delete(project, paths)` | Move them to the **project's trash** (restorable from the website); ask first: other people work there |
+| `project_upload_url(project, path, replace)` | A curl command to upload ONE file from the person's computer straight into the project (once, for an hour, within 2 minutes) |
+
+`on_conflict`: `fail` (default; the answer shows a free name), `rename`, `replace` (the old file goes to the trash).
+For a file made in the account's space (Blender, images) use `project_push`, not the upload link.
+
 ## The wiki
 
 A project has a **wiki** (on the website, tab Wiki; it used to be called "Storia"): the lore and the world of the
